@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.20.0 (f3d54d784)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: data-script
+  name: data-script
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: data-script
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.20.0 (f3d54d784)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/myapp: "true"
+        io.kompose.service: data-script
+    spec:
+      containers:
+      - image: anelyak/quotes-data-script:v2
+        name: data-script
+        env:
+        - name: MYSQL_DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: secret-data-script
+              key: MYSQL_DB_HOST 
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: secret-data-script
+              key: MYSQL_USER 
+        - name: MYSQL_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secret-data-script
+              key: MYSQL_USER_PASSWORD
+        resources: {}
+      restartPolicy: Always
+      initContainers:
+        - name: init-myservice
+          image: mysql:5.7
+          command: ['sh', '-c', "until mysql -h ${MYSQL_DB_HOST} -u ${MYSQL_USER} -p${MYSQL_USER_PASSWORD} -e 'show databases;'; do echo waiting for mydb; sleep 2; done"]
+          env:
+          - name: MYSQL_DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: secret-data-script
+                key: MYSQL_DB_HOST 
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: secret-data-script
+                key: MYSQL_USER 
+          - name: MYSQL_USER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-data-script
+                key: MYSQL_USER_PASSWORD
+status: {}
