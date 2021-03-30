@@ -7,7 +7,7 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: back
-  name: back
+  name: api
 spec:
   ports:
   - name: "3000"
